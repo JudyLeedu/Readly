@@ -280,7 +280,7 @@ export default function SidePanel() {
                         <div className="mb-6 pb-4 border-b border-[#EAEAEA]">
                           <h1 className="text-xl font-bold text-[#4A3B32] mb-4 leading-snug">{parsedArticle.title}</h1>
                           <h2 className="text-sm font-medium text-[#8A7363] tracking-wider uppercase mb-3">OVERVIEW</h2>
-                          <div className="text-[15px] text-[#333333] leading-relaxed">{parsedArticle.overview}</div>
+                          <div className="text-[14px] text-[#666666] leading-relaxed break-words">{parsedArticle.overview}</div>
                         </div>
                         
                         {/* 2. 主体：分块观点卡片 */}
