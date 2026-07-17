@@ -28,14 +28,65 @@ export function extractContent() {
 
     // 3. 使用 Readability 提取正文
     const reader = new Readability(documentClone)
-    const article = reader.parse()
+    let article = reader.parse()
+
+    // 4. 降级方案：如果 Readability 提取失败，或者提取的内容极短（少于 300 字符，可能只是抓到了副标题），
+    // 我们尝试手动拼接页面中所有带有锚点的段落（p, li 等）作为正文内容。
+    if (!article || (article.textContent && article.textContent.trim().length < 300)) {
+      console.warn("[Reader Partner] Readability 提取内容过少或失败，触发降级方案拼接文本...")
+      
+      let fallbackContent = ""
+      let fallbackTextContent = ""
+      
+      // 使用之前注入了锚点的真实节点对应的选择器
+      const fallbackNodes = articleContainer ? articleContainer.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li") : document.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li")
+      
+      fallbackNodes.forEach(node => {
+        const text = node.textContent?.trim() || ""
+        // 过滤掉极短的无意义文本，比如单独的数字、标点
+        if (text.length > 5) {
+          const anchorId = node.getAttribute("data-anchor") || ""
+          // 构建带有 data-anchor 的基础 HTML 结构，保证溯源功能正常
+          const tagName = node.tagName.toLowerCase()
+          fallbackContent += `<${tagName} data-anchor="${anchorId}">${text}</${tagName}>\n`
+          fallbackTextContent += text + "\n\n"
+        }
+      })
+
+      // 如果降级方案抓到了足够的内容，则伪造一个 article 对象
+      if (fallbackTextContent.length > 100) {
+        if (!article) {
+          article = {
+            title: document.title,
+            content: fallbackContent,
+            textContent: fallbackTextContent,
+            length: fallbackTextContent.length,
+            excerpt: "",
+            byline: "",
+            dir: "",
+            siteName: "",
+            lang: "",
+            publishedTime: ""
+          }
+        } else {
+          // 如果原本有 article 但字数太少，直接覆盖其内容
+          article.content = fallbackContent
+          article.textContent = fallbackTextContent
+          article.length = fallbackTextContent.length
+        }
+        console.log("[Reader Partner] 降级方案提取成功，字符数:", article.length)
+      } else {
+        console.warn("[Reader Partner] 降级方案也未能提取到有效长文")
+        if (!article) return null
+      }
+    }
 
     if (!article) {
       console.warn("[Reader Partner] 无法提取当前网页正文")
       return null
     }
 
-    // 4. 修复标题：Readability 默认抓取 <title> 标签，容易带有 " | 网站名" 后缀
+    // 5. 修复标题：Readability 默认抓取 <title> 标签，容易带有 " | 网站名" 后缀
     // 我们优先信任页面中视觉上最大的标题（通常是第一个 h1）
     const h1Element = document.querySelector("h1")
     if (h1Element && h1Element.textContent) {
