@@ -227,7 +227,7 @@ export default function SidePanel() {
         ) : (
           <div className="animate-in fade-in duration-500 max-w-2xl mx-auto">
             {/* 文章 Header（不再显示原始未翻译标题），仅在生成完成后或者加载失败时显示提取字数 */}
-            {!isGenerating && articleData && (
+            {!isGenerating && articleData && !parsedArticle?.error && (
               <div className="mb-4">
                 <div className="flex items-center gap-2 text-xs text-gray-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
@@ -268,9 +268,11 @@ export default function SidePanel() {
                   <div className="animate-in fade-in duration-500">
                     {/* 检查是否是被大模型判决为非文章的错误情况 */}
                     {parsedArticle.error ? (
-                      <div className="bg-white p-6 rounded-xl border border-[#EAEAEA] flex flex-col items-center justify-center text-center gap-3 my-10">
-                        <div className="w-10 h-10 rounded-full bg-[#FAFAFA] flex items-center justify-center text-xl mb-2">☕️</div>
-                        <div className="text-[15px] text-[#666666] leading-relaxed max-w-[85%]">{parsedArticle.error}</div>
+                      <div className="animate-in fade-in duration-500 flex flex-col items-center justify-center min-h-[60vh]">
+                        <div className="text-3xl mb-4">☕️</div>
+                        <div className="text-[#8A7363] font-medium text-[15px] text-center leading-relaxed max-w-[85%]">
+                          {parsedArticle.error}
+                        </div>
                       </div>
                     ) : (
                       <>
