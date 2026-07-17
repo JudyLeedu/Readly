@@ -266,53 +266,63 @@ export default function SidePanel() {
                 ) : parsedArticle ? (
                   // JSON 渲染模式
                   <div className="animate-in fade-in duration-500">
-                    {/* 1. 顶部：翻译后的主标题与一句话总结 */}
-                    <div className="mb-6 pb-4 border-b border-[#EAEAEA]">
-                      <h1 className="text-xl font-bold text-[#4A3B32] mb-4 leading-snug">{parsedArticle.title}</h1>
-                      <h2 className="text-sm font-medium text-[#8A7363] tracking-wider uppercase mb-3">OVERVIEW</h2>
-                      <div className="text-[15px] text-[#333333] leading-relaxed">{parsedArticle.overview}</div>
-                    </div>
-                    
-                    {/* 2. 主体：分块观点卡片 */}
-                    <div className="flex flex-col gap-4">
-                      {parsedArticle.highlights.map((highlight, index) => (
-                        <div key={index} className="group bg-white p-5 rounded-xl border border-[#EAEAEA] hover:border-[#8A7363] transition-all duration-300 flex flex-col gap-2">
-                          {/* 标题区 */}
-                          <div className="flex items-center gap-3">
-                            <span className="text-sm font-mono text-[#8A7363]">{(index + 1).toString().padStart(2, '0')}</span>
-                            <span className="text-[15px] text-[#333333] font-medium tracking-wide">{highlight.title}</span>
-                          </div>
-                          
-                          {/* 正文区：自适应排版 */}
-                          <p className="text-[14px] text-[#666666] leading-relaxed break-words pl-8">{highlight.description}</p>
-                          
-                          {highlight.bulletPoints && highlight.bulletPoints.length > 0 && (
-                            <ul className="list-disc pl-12 mt-1 space-y-1 text-[14px] text-[#666666] marker:text-[#8A7363]">
-                              {highlight.bulletPoints.map((point, i) => (
-                                <li key={i}>{point}</li>
-                              ))}
-                            </ul>
-                          )}
-                          
-                          {/* 极简溯源按钮：精准锚定 */}
-                          <div className="mt-3 pl-8 flex justify-start">
-                            <button 
-                              onClick={() => {
-                                chrome.runtime.sendMessage({ action: "SCROLL_TO_ANCHOR", data: { anchorId: highlight.anchorId } })
-                              }}
-                              className="inline-flex items-center gap-1 text-[13px] text-[#999999] hover:text-[#4A3B32] transition-colors cursor-pointer" 
-                              style={{ width: 'fit-content', flexShrink: 0, background: 'transparent', border: 'none', padding: 0 }}
-                              title="定位到原文"
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
-                              </svg>
-                              <span>定位到原文</span>
-                            </button>
-                          </div>
+                    {/* 检查是否是被大模型判决为非文章的错误情况 */}
+                    {parsedArticle.error ? (
+                      <div className="bg-white p-6 rounded-xl border border-[#EAEAEA] flex flex-col items-center justify-center text-center gap-3 my-10">
+                        <div className="w-10 h-10 rounded-full bg-[#FAFAFA] flex items-center justify-center text-xl mb-2">☕️</div>
+                        <div className="text-[15px] text-[#666666] leading-relaxed max-w-[85%]">{parsedArticle.error}</div>
+                      </div>
+                    ) : (
+                      <>
+                        {/* 1. 顶部：翻译后的主标题与一句话总结 */}
+                        <div className="mb-6 pb-4 border-b border-[#EAEAEA]">
+                          <h1 className="text-xl font-bold text-[#4A3B32] mb-4 leading-snug">{parsedArticle.title}</h1>
+                          <h2 className="text-sm font-medium text-[#8A7363] tracking-wider uppercase mb-3">OVERVIEW</h2>
+                          <div className="text-[15px] text-[#333333] leading-relaxed">{parsedArticle.overview}</div>
                         </div>
-                      ))}
-                    </div>
+                        
+                        {/* 2. 主体：分块观点卡片 */}
+                        <div className="flex flex-col gap-4">
+                          {parsedArticle.highlights?.map((highlight, index) => (
+                            <div key={index} className="group bg-white p-5 rounded-xl border border-[#EAEAEA] hover:border-[#8A7363] transition-all duration-300 flex flex-col gap-2">
+                              {/* 标题区 */}
+                              <div className="flex items-center gap-3">
+                                <span className="text-sm font-mono text-[#8A7363]">{(index + 1).toString().padStart(2, '0')}</span>
+                                <span className="text-[15px] text-[#333333] font-medium tracking-wide">{highlight.title}</span>
+                              </div>
+                              
+                              {/* 正文区：自适应排版 */}
+                              <p className="text-[14px] text-[#666666] leading-relaxed break-words pl-8">{highlight.description}</p>
+                              
+                              {highlight.bulletPoints && highlight.bulletPoints.length > 0 && (
+                                <ul className="list-disc pl-12 mt-1 space-y-1 text-[14px] text-[#666666] marker:text-[#8A7363]">
+                                  {highlight.bulletPoints.map((point, i) => (
+                                    <li key={i}>{point}</li>
+                                  ))}
+                                </ul>
+                              )}
+                              
+                              {/* 极简溯源按钮：精准锚定 */}
+                              <div className="mt-3 pl-8 flex justify-start">
+                                <button 
+                                  onClick={() => {
+                                    chrome.runtime.sendMessage({ action: "SCROLL_TO_ANCHOR", data: { anchorId: highlight.anchorId } })
+                                  }}
+                                  className="inline-flex items-center gap-1 text-[13px] text-[#999999] hover:text-[#4A3B32] transition-colors cursor-pointer" 
+                                  style={{ width: 'fit-content', flexShrink: 0, background: 'transparent', border: 'none', padding: 0 }}
+                                  title="定位到原文"
+                                >
+                                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                                  </svg>
+                                  <span>定位到原文</span>
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
                 ) : (
                   // 解析失败降级

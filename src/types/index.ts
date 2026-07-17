@@ -6,7 +6,8 @@ export interface Highlight {
 }
 
 export interface ArticleResponse {
-  title: string;
-  overview: string;
-  highlights: Highlight[];
+  error?: string; // 如果大模型认为这不是文章，返回错误提示
+  title?: string;
+  overview?: string;
+  highlights?: Highlight[];
 }
