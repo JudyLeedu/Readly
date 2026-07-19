@@ -12,17 +12,22 @@ export function extractContent() {
 
     // 获取所有包含实质性文本的真实块级元素（无视标签类型，解决 div 模拟 p 的问题）
     const realBlocks: Element[] = []
-    const walker = document.createTreeWalker(articleContainer, NodeFilter.SHOW_TEXT, null)
-    let textNode;
-    while (textNode = walker.nextNode()) {
-      const text = textNode.nodeValue?.trim() || ""
-      if (text.length > 20) { // 只提取包含有意义长句的元素
-        const parent = textNode.parentElement
-        if (parent && !realBlocks.includes(parent) && parent.tagName !== 'SCRIPT' && parent.tagName !== 'STYLE' && parent.tagName !== 'NOSCRIPT') {
-          realBlocks.push(parent)
+    
+    // 我们先尝试用更传统的方法收集所有的文本块
+    // 因为 TreeWalker 有时候在跨框架（如 shadow DOM 或特定 React 渲染树）时可能失效
+    const allElements = articleContainer.querySelectorAll('*')
+    allElements.forEach(el => {
+      // 如果这是一个包含直接文本的元素，或者是典型的文本容器
+      const hasDirectText = Array.from(el.childNodes).some(
+        node => node.nodeType === Node.TEXT_NODE && (node.nodeValue?.trim().length || 0) > 20
+      );
+      
+      if (hasDirectText && el.tagName !== 'SCRIPT' && el.tagName !== 'STYLE' && el.tagName !== 'NOSCRIPT' && el.tagName !== 'A') {
+        if (!realBlocks.includes(el)) {
+          realBlocks.push(el)
         }
       }
-    }
+    })
 
     // 1. 在原网页 DOM 注入锚点，用于后续高亮与滚动
     realBlocks.forEach((block, index) => {
