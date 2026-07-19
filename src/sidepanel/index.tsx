@@ -231,7 +231,7 @@ export default function SidePanel() {
               <div className="mb-4">
                 <div className="flex items-center gap-2 text-xs text-gray-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                  已提取 {articleData.textContent.length} 字符
+                  已提取 {articleData.textContent ? articleData.textContent.length : (articleData.length || 0)} 字符
                 </div>
               </div>
             )}
